@@ -23,6 +23,10 @@ extension AuthorizationContentView {
     func getLogintext() -> String? {
         loginTextField.textFieldData()
     }
+    
+    func getPasswordText() -> String? {
+        passwordTextField.textFieldData()
+    }
 }
 
 //MARK: - Private -
@@ -100,7 +104,6 @@ private extension AuthorizationContentView {
         enterButton.titleLabel?.textColor = .white
         enterButton.layer.cornerRadius = 5
         enterButton.addTarget(self, action: #selector(enterButtonTapped), for: .touchUpInside)
-        enterButton.isEnabled = false
     }
     
     @objc func enterButtonTapped() {
