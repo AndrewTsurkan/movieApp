@@ -1,14 +1,17 @@
 import UIKit
 
 final class AuthorizationView: UIView {
+    
     //MARK: - Private properties -
+    
     private let logoLabel = UILabel()
     private let loginTextField = AuthTextField()
     private let passwordTextField = AuthTextField()
     private let enterButton = UIButton()
     var enterButtonAction: (() -> Void)?
     
-    //MARK: - Life cycle -
+    //MARK: - Lifecycle -
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -18,7 +21,9 @@ final class AuthorizationView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 }
+
 //MARK: - Public -
+
 extension AuthorizationView {
     func getLogintext() -> String? {
         loginTextField.textFieldData()
@@ -29,7 +34,8 @@ extension AuthorizationView {
     }
 }
 
-//MARK: - Private -
+//MARK: - Private extension -
+
 private extension AuthorizationView {
     func setupUI() {
         addSubViews()

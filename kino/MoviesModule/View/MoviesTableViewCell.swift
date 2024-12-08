@@ -16,6 +16,7 @@ final class MoviesTableViewCell: UITableViewCell {
         String(describing: self)
     }
     //MARK: - Private properties -
+    
     private let movieName = UILabel()
     private let genresLabel = UILabel()
     private let yearAndCountriesLabel = UILabel()
@@ -23,7 +24,8 @@ final class MoviesTableViewCell: UITableViewCell {
     private let ratingLabel = UILabel()
     private let stackView = UIStackView()
     
-    //MARK: - lifeCycle -
+    //MARK: - LifeCycle -
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -43,6 +45,7 @@ final class MoviesTableViewCell: UITableViewCell {
 }
 
 //MARK: - UI -
+
 private extension MoviesTableViewCell {
     func setupUI() {
         addSubview()
@@ -127,6 +130,7 @@ private extension MoviesTableViewCell {
 }
 
 //MARK: - Public -
+
 extension MoviesTableViewCell {
     func configureCell(viewData: Movie) {
         posterImageView.image = viewData.poster

@@ -1,19 +1,20 @@
 import UIKit
 
-// YearPickerManager.swift
-
 final class YearPickerManager: NSObject, UIPickerViewDelegate, UIPickerViewDataSource {
-    // MARK: - Properties
+    // MARK: - Properties -
+    
     private var years: [Int] = []
     var selectedYear: Int?
 
-    // MARK: - Initialization
+    // MARK: - Initialization -
+    
     init(startYear: Int = 1990) {
         let currentYear = Calendar.current.component(.year, from: Date())
         self.years = Array(startYear...currentYear)
     }
 
-    // MARK: - UIPickerViewDataSource Methods
+    // MARK: - UIPickerViewDataSource Methods -
+    
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
@@ -22,7 +23,8 @@ final class YearPickerManager: NSObject, UIPickerViewDelegate, UIPickerViewDataS
         return years.count
     }
     
-    // MARK: - UIPickerViewDelegate Methods
+    // MARK: - UIPickerViewDelegate Methods -
+    
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         return "\(years[row])"
     }
@@ -31,7 +33,8 @@ final class YearPickerManager: NSObject, UIPickerViewDelegate, UIPickerViewDataS
         selectedYear = years[row]
     }
     
-    // MARK: - Helper Methods
+    // MARK: - Helper Methods -
+    
     func availableYears() -> [Int] {
         return years
     }

@@ -28,6 +28,7 @@ final class MoviesView: UIView {
 }
 
 //MARK: - UI -
+
 private extension MoviesView {
     func setupUI() {
         addSubviews()
@@ -128,6 +129,7 @@ private extension MoviesView {
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         datePicker.isHidden = true
         datePicker.backgroundColor = .white
+        datePicker.layer.cornerRadius = 15
     }
     
     func setupActivityIndicator() {
@@ -137,6 +139,7 @@ private extension MoviesView {
 }
 
 //MARK: - Public -
+
 extension MoviesView {
     func setDelegateAndDataSource(delegate: UITableViewDelegate, dataSource: UITableViewDataSource) {
         tableView.dataSource = dataSource
@@ -176,7 +179,7 @@ extension MoviesView {
     }
 }
 
-//MARK: - Private -
+//MARK: - Private extension -
 private extension MoviesView {
     @objc func showDatePicker() {
         datePicker.isHidden = false
