@@ -31,7 +31,7 @@ extension AuthorizationViewController: UITextFieldDelegate {
     }
 }
 
-//MARK: - Private -
+//MARK: - Private extension -
 
 private extension AuthorizationViewController {
     func setupAction() {
@@ -55,7 +55,7 @@ private extension AuthorizationViewController {
             if KeychainManager.shared.savePassword(password: password, for: login) {
                 openMoviesScreen()
             } else {
-                print("Ошмбка")
+                print("Ошибка")
             }
         }
     }

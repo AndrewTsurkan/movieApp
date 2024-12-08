@@ -18,7 +18,7 @@ final class SearchController: UISearchController {
     }
 }
 
-// MARK: - UISearchResultsUpdating
+// MARK: - UISearchResultsUpdating -
 
 extension SearchController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
@@ -29,7 +29,7 @@ extension SearchController: UISearchResultsUpdating {
     }
 }
 
-//MARK: - Private -
+//MARK: - Private extension -
 
 private extension SearchController {
     func configure() {
