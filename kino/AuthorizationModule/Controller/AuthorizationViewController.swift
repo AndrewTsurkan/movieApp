@@ -41,13 +41,13 @@ private extension AuthorizationViewController {
         if KeychainManager.shared.isPasswordExists(for: login) {
             if let savedPassword = KeychainManager.shared.getPassword(for: login),
                savedPassword == password {
-                print("Open new screen")
+                openMoviesScreen()
             } else {
                 showAlert()
             }
         } else {
             if KeychainManager.shared.savePassword(password: password, for: login) {
-                print("Open new screen")
+                openMoviesScreen()
             } else {
                 print("Ошмбка")
             }
@@ -58,5 +58,10 @@ private extension AuthorizationViewController {
         let alert = UIAlertController(title: "Уведомление", message: "Введен неверный пароль", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "ОК", style: .default))
         navigationController?.present(alert, animated: true)
+    }
+    
+    func openMoviesScreen() {
+        let moviesViewController = MoviesViewController()
+        navigationController?.pushViewController(moviesViewController, animated: true)
     }
 }
