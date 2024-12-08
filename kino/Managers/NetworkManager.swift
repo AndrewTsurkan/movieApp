@@ -10,14 +10,13 @@ final class NetworkManager {
     
     private let baseURL = "https://kinopoiskapiunofficial.tech"
     private let apiKey = "de1db718-950e-449d-88a1-39a41062cee6"
-    
     func fetchRequest(page: Int, queryParams: [String: String] = [:], complection: @escaping (Result<MoviesResponse, Error>) -> ()) {
         let endPoint = "/api/v2.2/films"
         
         var allParams = queryParams
         allParams["page"] = "\(page)"
         
-        guard let url = makeURL(endpoint: endPoint, queryParams: queryParams) else {
+        guard let url = makeURL(endpoint: endPoint, queryParams: allParams) else {
             complection(.failure(NetworkError.invalidURL))
             return
         }

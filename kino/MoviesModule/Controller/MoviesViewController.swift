@@ -7,14 +7,15 @@ final class MoviesViewController: UIViewController {
     private var refreshControl: UIRefreshControl!
     private var filteredMovies: [Items] = []
     private var isFiltering: Bool { return searchController.isActive && !(searchController.searchBar.text?.isEmpty ?? true) || yearPickerManager.selectedYear != nil }
-    private var totalPage = 1
-    private var currentPage = 1
-    private var isLoading = false
     private var movies: [Items] = [] {
-        didSet { contenView.reloadTableView() }
+        didSet {
+            contenView.reloadTableView()
+        }
     }
     
     private var yearPickerManager: YearPickerManager!
+    private var paginationManager: PaginationManager!
+    private var sortOrder: String = "YEAR"
     
     // MARK: - Life cycle -
     override func loadView() {
@@ -30,11 +31,16 @@ final class MoviesViewController: UIViewController {
         setupYearPicker()
         pickerButtonTapped()
         setupRefreshControl()
+        
+        paginationManager = PaginationManager()
+        paginationManager.loadMoreAction = { [weak self] page in
+            self?.loadMovies(page: page)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadMovies(page: currentPage)
+        loadMovies(page: paginationManager.currentPage)
     }
 }
 
@@ -51,39 +57,11 @@ extension MoviesViewController: UITableViewDelegate, UITableViewDataSource {
         
         let movie = isFiltering ? filteredMovies[indexPath.row] : movies[indexPath.row]
         configureCell(cell, with: movie)
-        
         return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 150
-    }
-    
-    private func configureCell(_ cell: MoviesTableViewCell, with movie: Items) {
-        guard let posterUrl = movie.posterUrlPreview,
-              let movieName = (movie.nameOriginal?.isEmpty ?? true) ? movie.nameRu : movie.nameOriginal,
-              let genre = movie.genres,
-              let country = movie.countries,
-              let year = movie.year,
-              let kinopoiskId = movie.kinopoiskId,
-              let rating = movie.ratingKinopoisk else { return }
-        
-        NetworkManager.shared.loadImage(urlString: posterUrl) { [weak cell] image in
-            DispatchQueue.main.async {
-                guard let cell, let image else { return }
-                
-                let moviesData = MoviesModel(
-                    movieName: movieName,
-                    year: String(year),
-                    country: country.compactMap { $0.country },
-                    genre: genre.compactMap { $0.genre },
-                    rating: String(rating),
-                    poster: image,
-                    kinopoiskId: kinopoiskId
-                )
-                cell.configureCell(viewData: moviesData)
-            }
-        }
     }
 }
 
@@ -93,8 +71,8 @@ extension MoviesViewController: UIScrollViewDelegate {
         let offsetY = scrollView.contentOffset.y
         let contentHeight = scrollView.contentSize.height
         let height = scrollView.frame.size.height
-        if offsetY > contentHeight - height - 100 && !isLoading {
-            loadMoreMoviesIfNeeded(currentRow: movies.count - 1)
+        if offsetY > contentHeight - height - 100 && !paginationManager.isLoading {
+            paginationManager.loadMoreIfNeeded(currentRow: movies.count - 1, totalItemsCount: movies.count)
         }
     }
 }
@@ -118,17 +96,21 @@ private extension MoviesViewController {
     }
     
     func loadMovies(page: Int) {
-        guard !isLoading, page <= totalPage else { return }
-        isLoading = true
-        NetworkManager.shared.fetchRequest(page: page) { [weak self] result in
+        guard !paginationManager.isLoading else { return }
+        
+        paginationManager.setLoadingState(true)
+        
+        var queryParams: [String: String] = [:]
+        queryParams["order"] = sortOrder
+        
+        NetworkManager.shared.fetchRequest(page: page, queryParams: queryParams) { [weak self] result in
             guard let self else { return }
             
             DispatchQueue.main.async {
-                self.isLoading = false
-                self.refreshControl.endRefreshing()
+                self.paginationManager.setLoadingState(false)
                 switch result {
                 case .success(let response):
-                    self.totalPage = response.totalPages ?? 1
+                    self.paginationManager.updatePages(totalPages: response.totalPages ?? 1)
                     if let newMovies = response.items {
                         self.movies.append(contentsOf: newMovies)
                     }
@@ -140,16 +122,9 @@ private extension MoviesViewController {
         }
     }
     
-    func loadMoreMoviesIfNeeded(currentRow: Int) {
-        if currentRow == movies.count - 1 && currentPage < totalPage {
-            currentPage += 1
-            loadMovies(page: currentPage)
-        }
-    }
-    
     func configureNavigationBarItems() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "rectangle.portrait.and.arrow.right"), style: .plain, target: self, action: #selector(logOutButtonTapped))
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(logOutButtonTapped))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(sortButtonTapped))
         navigationItem.title = "KinoPoisk"
     }
     
@@ -201,14 +176,73 @@ private extension MoviesViewController {
         showLoadingIndicator()
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
             guard let self else { return }
-            searchController.searchBar.text = ""
+            searchController.searchBar.text = nil
             yearPickerManager.selectedYear = nil
-            contenView.setTextTitleLabel(text: "Выберете год")
+            contenView.setTextTitleLabel(text: "Выберите год релиза")
             filteredMovies = []
-            currentPage = 1
+            paginationManager.changeCurrentPage(with: 1)
             movies.removeAll()
-            loadMovies(page: self.currentPage)
+            loadMovies(page: self.paginationManager.currentPage)
             hideLoadingIndicator()
         }
     }
+    
+    func configureCell(_ cell: MoviesTableViewCell, with movie: Items) {
+        guard let posterUrl = movie.posterUrlPreview,
+              let movieName = (movie.nameOriginal?.isEmpty ?? true) ? movie.nameRu : movie.nameOriginal,
+              let genre = movie.genres,
+              let country = movie.countries,
+              let year = movie.year,
+              let kinopoiskId = movie.kinopoiskId else { return }
+        let rating = movie.ratingKinopoisk
+        var ratingString: String = ""
+        if let rating {
+            ratingString = String(rating)
+        }
+        
+        NetworkManager.shared.loadImage(urlString: posterUrl) { [weak cell] image in
+                guard let cell, let image else { return }
+                let moviesData = MoviesModel(
+                    movieName: movieName,
+                    year: String(year),
+                    country: country.compactMap { $0.country },
+                    genre: genre.compactMap { $0.genre },
+                    rating: ratingString,
+                    poster: image,
+                    kinopoiskId: kinopoiskId
+                )
+            DispatchQueue.main.async {
+                cell.configureCell(viewData: moviesData)
+            }
+        }
+    }
+    
+    @objc func sortButtonTapped() {
+        let alertController = UIAlertController(title: "Сортировка", message: "Выберите параметр для сортировки", preferredStyle: .actionSheet)
+
+        let sortByDateAction = UIAlertAction(title: "По дате", style: .default) { [weak self] _ in
+            self?.sortOrder = "YEAR"
+            self?.reloadMovies()
+        }
+        
+        let sortByRatingAction = UIAlertAction(title: "По рейтингу", style: .default) { [weak self] _ in
+            self?.sortOrder = "RATING"
+            self?.reloadMovies()
+        }
+        
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
+
+        alertController.addAction(sortByDateAction)
+        alertController.addAction(sortByRatingAction)
+        alertController.addAction(cancelAction)
+
+        present(alertController, animated: true)
+    }
+    
+    func reloadMovies() {
+        paginationManager.changeCurrentPage(with: 1)
+        movies.removeAll()
+        loadMovies(page: paginationManager.currentPage)
+    }
 }
+

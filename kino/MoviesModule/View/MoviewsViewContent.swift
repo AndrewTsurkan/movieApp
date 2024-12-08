@@ -64,8 +64,8 @@ private extension MoviesViewContent {
             yearButton.heightAnchor.constraint(equalToConstant: 20),
             
             tableView.topAnchor.constraint(equalTo: labelWithButtonContainer.bottomAnchor, constant: 8),
-            tableView.leftAnchor.constraint(equalTo: safeAreaLayoutGuide.leftAnchor),
-            tableView.rightAnchor.constraint(equalTo: safeAreaLayoutGuide.rightAnchor),
+            tableView.leftAnchor.constraint(equalTo: safeAreaLayoutGuide.leftAnchor, constant: 20),
+            tableView.rightAnchor.constraint(equalTo: safeAreaLayoutGuide.rightAnchor, constant: -20),
             tableView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
             
             datePicker.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
@@ -107,7 +107,7 @@ private extension MoviesViewContent {
     func setupTitleLabel() {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textColor = .gray
-        titleLabel.text = "Выберети год релиза"
+        titleLabel.text = "Выберите год релиза"
         titleLabel.textAlignment = .center
         titleLabel.backgroundColor = .clear
     }
