@@ -1,10 +1,10 @@
 import UIKit
 
-final class AuthorizationContentView: UIView {
+final class AuthorizationView: UIView {
     //MARK: - Private properties -
     private let logoLabel = UILabel()
-    private let loginTextField = CustomTextField()
-    private let passwordTextField = CustomTextField()
+    private let loginTextField = AuthTextField()
+    private let passwordTextField = AuthTextField()
     private let enterButton = UIButton()
     var enterButtonAction: (() -> Void)?
     
@@ -19,7 +19,7 @@ final class AuthorizationContentView: UIView {
     }
 }
 //MARK: - Public -
-extension AuthorizationContentView {
+extension AuthorizationView {
     func getLogintext() -> String? {
         loginTextField.textFieldData()
     }
@@ -30,7 +30,7 @@ extension AuthorizationContentView {
 }
 
 //MARK: - Private -
-private extension AuthorizationContentView {
+private extension AuthorizationView {
     func setupUI() {
         addSubViews()
         makeConstraints()
@@ -63,7 +63,6 @@ private extension AuthorizationContentView {
             passwordTextField.rightAnchor.constraint(equalTo: rightAnchor, constant: -20),
             passwordTextField.heightAnchor.constraint(equalToConstant: 47),
             
-            
             logoLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             logoLabel.bottomAnchor.constraint(equalTo: loginTextField.topAnchor, constant: -100),
             
@@ -72,7 +71,6 @@ private extension AuthorizationContentView {
             enterButton.heightAnchor.constraint(equalToConstant: 47),
             enterButton.topAnchor.constraint(equalTo: bottomAnchor, constant: -(screenHeight/4))
         ])
-        
     }
     
     func setupLogoLabel() {
@@ -108,7 +106,6 @@ private extension AuthorizationContentView {
     
     @objc func enterButtonTapped() {
          enterButtonAction?()
-
     }
 }
 

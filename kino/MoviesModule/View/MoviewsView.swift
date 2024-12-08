@@ -1,7 +1,9 @@
 import UIKit
 
-final class MoviesViewContent: UIView {
+final class MoviesView: UIView {
+    
     //MARK: - Private properties -
+    
     private let tableView = UITableView()
     private let labelWithButtonContainer = UIView()
     private let titleLabel = UILabel()
@@ -9,10 +11,12 @@ final class MoviesViewContent: UIView {
     private let datePicker = UIPickerView()
     private let pickerButton = UIButton()
     private let activityIndicator = UIActivityIndicatorView(style: .large)
+    
     var yearPickerButtonAction: (() -> Void)?
     
     
-    //MARK: - Life cycle -
+    //MARK: - Lifecycle -
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -24,7 +28,7 @@ final class MoviesViewContent: UIView {
 }
 
 //MARK: - UI -
-private extension MoviesViewContent {
+private extension MoviesView {
     func setupUI() {
         addSubviews()
         makeConstraints()
@@ -133,7 +137,7 @@ private extension MoviesViewContent {
 }
 
 //MARK: - Public -
-extension MoviesViewContent {
+extension MoviesView {
     func setDelegateAndDataSource(delegate: UITableViewDelegate, dataSource: UITableViewDataSource) {
         tableView.dataSource = dataSource
         tableView.delegate = delegate
@@ -173,7 +177,7 @@ extension MoviesViewContent {
 }
 
 //MARK: - Private -
-private extension MoviesViewContent {
+private extension MoviesView {
     @objc func showDatePicker() {
         datePicker.isHidden = false
     }

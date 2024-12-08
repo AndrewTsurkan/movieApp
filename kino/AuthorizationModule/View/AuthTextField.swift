@@ -1,7 +1,9 @@
 import UIKit
 
-final class CustomTextField: UITextField {
-    //MARK: - Life cycle -
+final class AuthTextField: UITextField {
+    
+    //MARK: - Lifecycle -
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupTextField()        
@@ -12,8 +14,9 @@ final class CustomTextField: UITextField {
     }
 }
 
-//MARK: - Open -
-extension CustomTextField {
+//MARK: - Public extension -
+
+extension AuthTextField {
     func settingPlaceholder(text: String) {
         self.placeholder = text
         setupAttribute()
@@ -36,8 +39,9 @@ extension CustomTextField {
     }
 }
 
-//MARK: - Private -
-private extension CustomTextField {
+//MARK: - Private extension -
+
+private extension AuthTextField {
     func setupTextField() {
         layer.borderWidth = 1
         let textFieldPadding = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 10))

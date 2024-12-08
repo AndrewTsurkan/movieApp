@@ -6,18 +6,20 @@ fileprivate enum NetworkError: Error {
 }
 
 final class NetworkManager {
+    
     static var shared = NetworkManager() ; private init() { }
     
     private let baseURL = "https://kinopoiskapiunofficial.tech"
     private let apiKey = "de1db718-950e-449d-88a1-39a41062cee6"
-    func fetchRequest(page: Int, queryParams: [String: String] = [:], complection: @escaping (Result<MoviesResponse, Error>) -> ()) {
+    
+    func getFilms(page: Int, queryParams: [String: String] = [:], completion: @escaping (Result<MoviesResponse, Error>) -> ()) {
         let endPoint = "/api/v2.2/films"
         
         var allParams = queryParams
         allParams["page"] = "\(page)"
         
         guard let url = makeURL(endpoint: endPoint, queryParams: allParams) else {
-            complection(.failure(NetworkError.invalidURL))
+            completion(.failure(NetworkError.invalidURL))
             return
         }
         
@@ -28,20 +30,20 @@ final class NetworkManager {
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error {
-                complection(.failure(error))
+                completion(.failure(error))
                 return
             }
             
             guard let data else {
-                complection(.failure(NetworkError.noData))
+                completion(.failure(NetworkError.noData))
                 return
             }
             
             do {
                 let moviesResponse = try JSONDecoder().decode(MoviesResponse.self, from: data)
-                complection(.success(moviesResponse))
+                completion(.success(moviesResponse))
             } catch {
-                complection(.failure(error))
+                completion(.failure(error))
             }
         }
         

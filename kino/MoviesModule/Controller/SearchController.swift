@@ -1,10 +1,13 @@
 import UIKit
 
-final class CustomSearchController: UISearchController {
+final class SearchController: UISearchController {
+    
     // MARK: - Public properties
+    
     var searchBarTextChanged: ((String) -> Void)?
     
     // MARK: - Initialization
+    
     override init(searchResultsController: UIViewController? = nil) {
         super.init(searchResultsController: searchResultsController)
         configure()
@@ -16,7 +19,8 @@ final class CustomSearchController: UISearchController {
 }
 
 // MARK: - UISearchResultsUpdating
-extension CustomSearchController: UISearchResultsUpdating {
+
+extension SearchController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         if let searchText = searchController.searchBar.text {
             searchBarTextChanged?(searchText.lowercased())
@@ -26,7 +30,8 @@ extension CustomSearchController: UISearchResultsUpdating {
 }
 
 //MARK: - Private -
-private extension CustomSearchController {
+
+private extension SearchController {
     func configure() {
         searchResultsUpdater = self
         obscuresBackgroundDuringPresentation = false

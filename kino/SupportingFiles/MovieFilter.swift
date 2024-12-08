@@ -1,10 +1,9 @@
 import Foundation
 
-import Foundation
-
 final class MovieFilter {
-    static func filter(movies: [Items], searchText: String, selectedYear: Int?) -> [Items] {
-        return movies.filter { movie in
+    
+    static func filter(movies: [Item], searchText: String, selectedYear: Int?) -> [Item] {
+        movies.filter { movie in
             let matchesSearchText: Bool
             if searchText.isEmpty {
                 matchesSearchText = true
@@ -13,7 +12,6 @@ final class MovieFilter {
                     ? movie.nameOriginal!.lowercased().contains(searchText)
                     : (movie.nameRu?.lowercased().contains(searchText) ?? false)
             }
-
             let matchesYear = selectedYear == nil || (movie.year == selectedYear)
             return matchesSearchText && matchesYear
         }

@@ -2,6 +2,16 @@ import UIKit
 
 final class MoviesTableViewCell: UITableViewCell {
     
+    struct Movie {
+        let movieName: String
+        let year: String
+        let country: [String]
+        let genre: [String]
+        let rating: String
+        let poster: UIImage
+        let kinopoiskId: Int
+    }
+    
     static var reuseIdentifier: String {
         String(describing: self)
     }
@@ -118,7 +128,7 @@ private extension MoviesTableViewCell {
 
 //MARK: - Public -
 extension MoviesTableViewCell {
-    func configureCell(viewData: MoviesModel) {
+    func configureCell(viewData: Movie) {
         posterImageView.image = viewData.poster
         movieName.text = viewData.movieName
         yearAndCountriesLabel.text = "\(viewData.year), \(viewData.country.joined(separator: ", "))"

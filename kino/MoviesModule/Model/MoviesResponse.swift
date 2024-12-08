@@ -2,10 +2,10 @@ import UIKit
 
 struct MoviesResponse: Codable {
     let totalPages: Int?
-    let items: [Items]?
+    let items: [Item]?
 }
 
-struct Items: Codable {
+struct Item: Codable {
     let kinopoiskId: Int?
     let nameOriginal: String?
     let countries: [Country]?

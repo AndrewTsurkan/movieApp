@@ -2,6 +2,7 @@ import Foundation
 import Security
 
 final class KeychainManager {
+    
     static let shared = KeychainManager() ; private init() {}
     
     func savePassword(password: String, for login: String) -> Bool {

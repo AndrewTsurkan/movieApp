@@ -1,9 +1,13 @@
 import UIKit
 
 final class AuthorizationViewController: UIViewController {
-//MARK: - Private properties -
-    private let contentView = AuthorizationContentView()
-    //MARK: - Life cycle -
+    
+    //MARK: - Private properties -
+    
+    private let contentView = AuthorizationView()
+    
+    //MARK: - Lifecycle -
+    
     override func loadView() {
         super.loadView()
         view = contentView
@@ -16,6 +20,7 @@ final class AuthorizationViewController: UIViewController {
 }
 
 //MARK: - UITextFieldDelegate -
+
 extension AuthorizationViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
 
@@ -27,6 +32,7 @@ extension AuthorizationViewController: UITextFieldDelegate {
 }
 
 //MARK: - Private -
+
 private extension AuthorizationViewController {
     func setupAction() {
         contentView.enterButtonAction = { [weak self] in
