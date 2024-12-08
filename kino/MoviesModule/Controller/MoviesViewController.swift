@@ -89,6 +89,7 @@ extension MoviesViewController: UIScrollViewDelegate {
 }
 
 // MARK: - UISearchResultsUpdating -
+
 extension MoviesViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         filterMovies()
@@ -96,6 +97,7 @@ extension MoviesViewController: UISearchResultsUpdating {
 }
 
 // MARK: - Private Methods -
+
 private extension MoviesViewController {
     func setDelegateAndDataSource() {
         contentView.setDelegateAndDataSource(delegate: self, dataSource: self)
