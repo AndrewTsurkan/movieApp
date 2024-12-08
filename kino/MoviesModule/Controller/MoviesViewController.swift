@@ -162,6 +162,8 @@ private extension MoviesViewController {
     func pickerButtonTapped() {
         contentView.yearPickerButtonAction = { [weak self] in
             self?.contentView.changeDate()
+            guard let selectedYear = self?.yearPickerManager.selectedYear else { return }
+            self?.contentView.setTextTitleLabel(text: String(selectedYear))
             self?.filterMovies()
         }
     }
