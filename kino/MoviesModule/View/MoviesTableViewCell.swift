@@ -22,6 +22,14 @@ final class MoviesTableViewCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func prepareForReuse() {
+        movieName.text = nil
+        genresLabel.text = nil
+        yearAndCountriesLabel.text = nil
+        posterImageView.image = nil
+        ratingLabel.text = nil 
+    }
 }
 
 //MARK: - UI -
@@ -35,33 +43,33 @@ private extension MoviesTableViewCell {
         setupGenresLabel()
         setupYearAndCountriesLabel()
         setupRatingLabel()
+        contentView.backgroundColor = .black
     }
     
     func addSubview() {
-        addSubview(posterImageView)
-        addSubview(stackView)
+        contentView.addSubview(posterImageView)
+        contentView.addSubview(stackView)
         stackView.addArrangedSubview(movieName)
         stackView.addArrangedSubview(genresLabel)
         stackView.addArrangedSubview(yearAndCountriesLabel)
-        addSubview(ratingLabel)
+        contentView.addSubview(ratingLabel)
     }
     
     func makeConstraints() {
         let screenWidth = UIScreen.main.bounds.width
-        let screenHeight = UIScreen.main.bounds.height
         NSLayoutConstraint.activate([
-            posterImageView.leftAnchor.constraint(equalTo: leftAnchor),
-            posterImageView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
-            posterImageView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+            posterImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
+            posterImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            posterImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
             posterImageView.widthAnchor.constraint(equalToConstant: screenWidth/3),
             
-            stackView.leftAnchor.constraint(equalTo: posterImageView.leftAnchor, constant: 8),
-            stackView.rightAnchor.constraint(equalTo: rightAnchor, constant: -10),
-            stackView.bottomAnchor.constraint(equalTo: ratingLabel.topAnchor, constant: -5),
-            stackView.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            ratingLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20),
+            ratingLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
             
-            ratingLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -10),
-            ratingLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10)
+            stackView.leftAnchor.constraint(equalTo: posterImageView.rightAnchor, constant: 8),
+            stackView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -10),
+            stackView.bottomAnchor.constraint(equalTo: ratingLabel.topAnchor, constant: -5),
+            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10)
         ])
     }
     
@@ -71,13 +79,15 @@ private extension MoviesTableViewCell {
     }
     
     func setupStackView() {
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.spacing = 5
         stackView.alignment = .leading
-        stackView.distribution = .equalSpacing
+        stackView.distribution = .fillProportionally
     }
     
     func setupMovieNameLabel() {
+        movieName.translatesAutoresizingMaskIntoConstraints = false
         movieName.textColor = .white
         movieName.textAlignment = .left
         movieName.font = UIFont.boldSystemFont(ofSize: 24)
@@ -85,20 +95,34 @@ private extension MoviesTableViewCell {
     }
     
     func setupGenresLabel() {
-        yearAndCountriesLabel.textColor = .gray
-        yearAndCountriesLabel.textAlignment = .left
-        yearAndCountriesLabel.font = UIFont.systemFont(ofSize: 14)
+        genresLabel.translatesAutoresizingMaskIntoConstraints = false
+        genresLabel.textColor = .gray
+        genresLabel.textAlignment = .left
+        genresLabel.font = UIFont.systemFont(ofSize: 14)
     }
     
     func setupYearAndCountriesLabel() {
+        yearAndCountriesLabel.translatesAutoresizingMaskIntoConstraints = false
         yearAndCountriesLabel.textColor = .gray
         yearAndCountriesLabel.textAlignment = .left
         yearAndCountriesLabel.font = UIFont.systemFont(ofSize: 14)
     }
     
     func setupRatingLabel() {
-        genresLabel.textColor = #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)
-        genresLabel.font = UIFont.boldSystemFont(ofSize: 24)
-        genresLabel.textAlignment = .right
+        ratingLabel.translatesAutoresizingMaskIntoConstraints = false
+        ratingLabel.textColor = #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)
+        ratingLabel.font = UIFont.boldSystemFont(ofSize: 24)
+        ratingLabel.textAlignment = .right
+    }
+}
+
+//MARK: - Public -
+extension MoviesTableViewCell {
+    func configureCell(viewData: MoviesModel) {
+        posterImageView.image = viewData.poster
+        movieName.text = viewData.movieName
+        yearAndCountriesLabel.text = "\(viewData.year), \(viewData.country.joined(separator: ", "))"
+        genresLabel.text = viewData.genre.joined(separator: ", ")
+        ratingLabel.text = viewData.rating
     }
 }
