@@ -24,7 +24,7 @@ final class MoviesViewController: UIViewController {
     
     private let yearPickerManager = YearPickerManager()
     private let paginationManager = PaginationManager()
-    private var sortOrder: SortOrder = .year
+    private var sortOrder: SortOrder = .rating
     
     // MARK: - Lifecycle -
     
@@ -41,7 +41,8 @@ final class MoviesViewController: UIViewController {
         setupYearPicker()
         pickerButtonTapped()
         setupRefreshControl()
-        
+        loadMovies(page: paginationManager.currentPage)
+
         paginationManager.loadMoreAction = { [weak self] page in
             self?.loadMovies(page: page)
         }
@@ -49,7 +50,12 @@ final class MoviesViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadMovies(page: paginationManager.currentPage)
+        if let navigationBar = navigationController?.navigationBar {
+            navigationBar.barTintColor = .black
+            navigationBar.tintColor = #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)
+            navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)]
+            navigationBar.isTranslucent = false
+        }
     }
 }
 
@@ -72,6 +78,12 @@ extension MoviesViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 150
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let id = movies[indexPath.row].kinopoiskId else { return }
+        let detailViewController = DetailViewController(kinopoiskId: id)
+        navigationController?.pushViewController(detailViewController, animated: true)
     }
 }
 
@@ -162,6 +174,8 @@ private extension MoviesViewController {
     func pickerButtonTapped() {
         contentView.yearPickerButtonAction = { [weak self] in
             self?.contentView.changeDate()
+            guard let selectedYear = self?.yearPickerManager.selectedYear else { return }
+            self?.contentView.setTextTitleLabel(text: String(selectedYear))
             self?.filterMovies()
         }
     }
@@ -179,6 +193,7 @@ private extension MoviesViewController {
     func setupRefreshControl() {
         refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+        refreshControl.tintColor = .gray
         contentView.refreshTableView(refresh: refreshControl)
     }
     
