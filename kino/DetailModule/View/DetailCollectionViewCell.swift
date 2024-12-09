@@ -1,7 +1,6 @@
 import UIKit
 
 final class DetailCollectionViewCell: UICollectionViewCell {
-    
     static var identifier: String {
         String(describing: self)
     }
@@ -37,5 +36,13 @@ private extension DetailCollectionViewCell {
         posterImageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
         posterImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
+    }
+}
+
+//MARK: - Public -
+
+extension DetailCollectionViewCell {
+    func configureCell(poster: UIImage) {
+        posterImageView.image = poster
     }
 }
