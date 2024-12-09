@@ -12,8 +12,10 @@ final class NetworkManager {
     private let baseURL = "https://kinopoiskapiunofficial.tech"
     private let apiKey = "de1db718-950e-449d-88a1-39a41062cee6"
     
-    func getFilms(page: Int, queryParams: [String: String] = [:], completion: @escaping (Result<MoviesResponse, Error>) -> ()) {
-        let endPoint = "/api/v2.2/films"
+    func getFilms(endPoint: String = "/api/v2.2/films",
+                  page: Int,
+                  queryParams: [String: String] = [:],
+                  completion: @escaping (Result<MoviesResponse, Error>) -> ()) {
         
         var allParams = queryParams
         allParams["page"] = "\(page)"
@@ -50,10 +52,83 @@ final class NetworkManager {
         task.resume()
     }
     
-    private func makeURL(endpoint: String, queryParams: [String: String]) -> URL? {
+    func getStillsFilm(id: Int,
+                       page: Int,
+                       completion: @escaping (Result<DetailScreenStillsFilms, Error>) -> ()) {
+        let allParam = ["page" : "\(page)"]
+        
+        guard let url = makeURL(endpoint: "/api/v2.2/films/\(id)/imegas", queryParams: allParam) else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue(apiKey, forHTTPHeaderField: "X-API-KEY")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let data else {
+                completion(.failure(NetworkError.noData))
+                return
+            }
+            
+            do {
+                let stillsResponse = try JSONDecoder().decode(DetailScreenStillsFilms.self, from: data)
+                completion(.success(stillsResponse))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+    
+    func getDetailFilm(id: Int, completion: @escaping (Result<DetailScreenResponse, Error>) -> ()) {
+        
+        guard let url = makeURL(endpoint: "/api/v2.2/films/\(id)", queryParams: nil) else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue(apiKey, forHTTPHeaderField: "X-API-KEY")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let data else {
+                completion(.failure(NetworkError.noData))
+                return
+            }
+            
+            do {
+                let detailResponse = try JSONDecoder().decode(DetailScreenResponse.self, from: data)
+                completion(.success(detailResponse))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+    
+    private func makeURL(endpoint: String, queryParams: [String: String]?) -> URL? {
         var components = URLComponents(string: baseURL)
         components?.path = endpoint
-        components?.queryItems = queryParams.map { URLQueryItem(name: $0.key, value: $0.value) }
+        
+        if let queryParams = queryParams, !queryParams.isEmpty {
+            components?.queryItems = queryParams.map { URLQueryItem(name: $0.key, value: $0.value) }
+        }
+        
         return components?.url
     }
     
