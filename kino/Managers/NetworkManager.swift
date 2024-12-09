@@ -10,7 +10,9 @@ final class NetworkManager {
     static var shared = NetworkManager() ; private init() { }
     
     private let baseURL = "https://kinopoiskapiunofficial.tech"
-    private let apiKey = "de1db718-950e-449d-88a1-39a41062cee6"
+    private let apiKey = "36969161-082b-4122-b344-ae07f9d52b03"
+//    "de1db718-950e-449d-88a1-39a41062cee6"
+    
     
     func getFilms(endPoint: String = "/api/v2.2/films",
                   page: Int,
@@ -57,7 +59,7 @@ final class NetworkManager {
                        completion: @escaping (Result<DetailScreenStillsFilms, Error>) -> ()) {
         let allParam = ["page" : "\(page)"]
         
-        guard let url = makeURL(endpoint: "/api/v2.2/films/\(id)/imegas", queryParams: allParam) else {
+        guard let url = makeURL(endpoint: "/api/v2.2/films/\(id)/images", queryParams: allParam) else {
             completion(.failure(NetworkError.invalidURL))
             return
         }

@@ -23,6 +23,8 @@ final class DetailView: UIView {
     private let yearAndCountryLabel = UILabel()
     private var collectionView: UICollectionView!
     private let stackView = UIStackView()
+    private let scrollView = UIScrollView()
+    private let stillsLabel = UILabel()
     
     
     //MARK: - Lifecycle -
@@ -46,7 +48,9 @@ private extension DetailView {
         setupPosterImageView()
         setupFilmNameLabel()
         setupRatingLabel()
+        setupScrollView()
         setupStackView()
+        setupStillsLabel()
         setupTitleDescriptionLabel()
         setupDescriptionLabel()
         setupGenreLabel()
@@ -58,12 +62,14 @@ private extension DetailView {
         addSubview(posterImageView)
         addSubview(filmNameLabel)
         addSubview(ratingLabel)
-        addSubview(titleDescriptionLabel)
-        addSubview(stackView)
+        addSubview(scrollView)
+        scrollView.addSubview(titleDescriptionLabel)
+        scrollView.addSubview(stackView)
         stackView.addArrangedSubview(descriptionLabel)
         stackView.addArrangedSubview(genreLabel)
         stackView.addArrangedSubview(yearAndCountryLabel)
-        addSubview(collectionView)
+        scrollView.addSubview(stillsLabel)
+        scrollView.addSubview(collectionView)
     }
     
     func makeConstraints() {
@@ -73,32 +79,47 @@ private extension DetailView {
             posterImageView.leftAnchor.constraint(equalTo: leftAnchor),
             posterImageView.rightAnchor.constraint(equalTo: rightAnchor),
             
-            filmNameLabel.bottomAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: -15),
-            filmNameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 20),
-            
             ratingLabel.bottomAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: -15),
             ratingLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -20),
             
-            titleDescriptionLabel.topAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: 5),
-            titleDescriptionLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 20),
+            filmNameLabel.bottomAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: -15),
+            filmNameLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 20),
+            filmNameLabel.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.5),
+            
+            scrollView.topAnchor.constraint(equalTo: posterImageView.bottomAnchor, constant: 5),
+            scrollView.leftAnchor.constraint(equalTo: leftAnchor),
+            scrollView.rightAnchor.constraint(equalTo: rightAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            
+            titleDescriptionLabel.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 5),
+            titleDescriptionLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 20),
             titleDescriptionLabel.heightAnchor.constraint(equalToConstant: 25),
             
             stackView.topAnchor.constraint(equalTo: titleDescriptionLabel.bottomAnchor, constant: 5),
             stackView.leftAnchor.constraint(equalTo: leftAnchor, constant: 20),
             stackView.rightAnchor.constraint(equalTo: rightAnchor),
-            stackView.bottomAnchor.constraint(equalTo: collectionView.topAnchor, constant: -20),
             
-            collectionView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
-            collectionView.leftAnchor.constraint(equalTo: leftAnchor, constant: 20),
+            stillsLabel.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 8),
+            stillsLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 20),
+            
+            collectionView.topAnchor.constraint(equalTo: stillsLabel.bottomAnchor),
+            collectionView.leftAnchor.constraint(equalTo: leftAnchor),
             collectionView.rightAnchor.constraint(equalTo: rightAnchor),
-            collectionView.heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.height / 5)
+            collectionView.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.2),
+            collectionView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor)
         ])
     }
     
     func setupPosterImageView() {
         posterImageView.translatesAutoresizingMaskIntoConstraints = false
-//        posterImageView.clipsToBounds = true
+        posterImageView.clipsToBounds = true
         posterImageView.contentMode = .scaleToFill
+    }
+    
+    func setupScrollView() {
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.alwaysBounceVertical = true
     }
     
     func setupFilmNameLabel() {
@@ -155,36 +176,37 @@ private extension DetailView {
         yearAndCountryLabel.numberOfLines = 1
     }
     
+    func setupStillsLabel() {
+        //TODO: Добавлял хедер, почему то начинала скролиться даблица по вертикали, скрывая хедер и обратно
+        stillsLabel.translatesAutoresizingMaskIntoConstraints = false
+        stillsLabel.textColor = .white
+        stillsLabel.font = UIFont.boldSystemFont(ofSize: 32)
+        stillsLabel.textAlignment = .left
+        stillsLabel.text = "Кадры"
+    }
+    
     func setupCollectionView() {
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(DetailCollectionViewCell.self, forCellWithReuseIdentifier: DetailCollectionViewCell.identifier)
-        collectionView.register(CollectionHeaderView.self,
-                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-                                withReuseIdentifier: CollectionHeaderView.identifier)
-        collectionView.backgroundColor = .white
+        collectionView.backgroundColor = .black
+        collectionView.alwaysBounceHorizontal = true
+        collectionView.alwaysBounceVertical = false
     }
     
     func createLayout() -> UICollectionViewCompositionalLayout {
         //item
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4), heightDimension: .fractionalHeight(1))
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(0.7))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         //group
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4), heightDimension: .fractionalHeight(1))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        group.interItemSpacing = .fixed(10)
         //section
         let section = NSCollectionLayoutSection(group: group)
-        
         // header
         let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(50))
-        let header = NSCollectionLayoutBoundarySupplementaryItem(
-            layoutSize: headerSize,
-            elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top
-        )
-        section.boundarySupplementaryItems = [header]
-        
+        section.orthogonalScrollingBehavior = .continuous
+        section.interGroupSpacing = 20
         return UICollectionViewCompositionalLayout(section: section)
     }
 }

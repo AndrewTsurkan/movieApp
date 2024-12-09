@@ -18,6 +18,11 @@ final class DetailCollectionViewCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        posterImageView.image = nil 
+    }
 }
 
 //MARK: - UI -
@@ -31,10 +36,10 @@ private extension DetailCollectionViewCell {
     
     func makeConstraint() {
         NSLayoutConstraint.activate([
-        posterImageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            posterImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
         posterImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
         posterImageView.rightAnchor.constraint(equalTo: contentView.rightAnchor),
-        posterImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            posterImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
         ])
     }
 }
