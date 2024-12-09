@@ -14,6 +14,7 @@ struct Item: Codable {
     let ratingKinopoisk: Double?
     let year: Int?
     let posterUrlPreview: String?
+    let previewUrl: String?
 }
 
 struct Country: Codable {
