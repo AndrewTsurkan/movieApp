@@ -26,15 +26,15 @@ private extension CollectionHeaderView {
         addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.text = "Кадры"
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 18)
-        titleLabel.textColor = .black
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 32)
+        titleLabel.textColor = .white
         makeConstrant()
     }
     
     func makeConstrant() {
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            titleLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 20),
+            titleLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -20),
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
     }

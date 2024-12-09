@@ -50,12 +50,7 @@ final class MoviesViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if let navigationBar = navigationController?.navigationBar {
-            navigationBar.barTintColor = .black
-            navigationBar.tintColor = #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)
-            navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)]
-            navigationBar.isTranslucent = false
-        }
+        setupNavigationBar()
     }
 }
 
@@ -81,7 +76,8 @@ extension MoviesViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let id = movies[indexPath.row].kinopoiskId else { return }
+        let movie = isFiltering ? filteredMovies[indexPath.row] : movies[indexPath.row]
+        guard let id = movie.kinopoiskId else { return }
         let detailViewController = DetailViewController(kinopoiskId: id)
         navigationController?.pushViewController(detailViewController, animated: true)
     }
@@ -149,6 +145,15 @@ private extension MoviesViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "rectangle.portrait.and.arrow.right"), style: .plain, target: self, action: #selector(logOutButtonTapped))
         navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "arrow.up.arrow.down"), style: .plain, target: self, action: #selector(sortButtonTapped))
         navigationItem.title = "KinoPoisk"
+    }
+    
+    func setupNavigationBar() {
+        if let navigationBar = navigationController?.navigationBar {
+            navigationBar.barTintColor = .black
+            navigationBar.tintColor = #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)
+            navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)]
+            navigationBar.isTranslucent = false
+        }
     }
     
     @objc func logOutButtonTapped() {
