@@ -39,7 +39,7 @@ final class MoviesViewController: UIViewController {
         pickerButtonTapped()
         setupRefreshControl()
         loadMovies(page: paginationManager.currentPage)
-
+        
         paginationManager.loadMoreAction = { [weak self] page in
             self?.loadMovies(page: page)
         }
@@ -69,7 +69,9 @@ extension MoviesViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         let movie = isFiltering ? filteredMovies[indexPath.row] : movies[indexPath.row]
-        configureCell(cell, with: movie)
+        Task {
+            await configureCell(cell, with: movie)
+        }
         return cell
     }
     
@@ -119,24 +121,14 @@ private extension MoviesViewController {
         var queryParams: [String: String] = [:]
         queryParams["order"] = sortOrder.rawValue
         
-        NetworkManager.shared.getFilms(page: page, queryParams: queryParams) { [weak self] result in
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-
-                paginationManager.setLoadingState(false)
-                switch result {
-                case .success(let response):
-                    paginationManager.updatePages(totalPages: response.totalPages ?? 1)
-                    movies += response.items ?? []
-                case .failure(let error):
-                    print("Ошибка при загрузке фильмов: \(error)")
-                    showErrorAlert(message: "Ошибка при загрузке данных. Пожалуйста, попробуйте позже.")
-                }
-                DispatchQueue.main.async { [weak self] in
-                    guard let self else { return }
-                    contentView.reloadTableView()
-                }
+        Task {
+            let results = try await NetworkService.shared.fetchData(page: page, queryParams: queryParams, decodingType: MoviesResponse.self)
+            paginationManager.updatePages(totalPages: results.totalPages ?? 1)
+            movies += results.items ?? []
+            await MainActor.run {
+                contentView.reloadTableView()
             }
+            paginationManager.setLoadingState(false)
         }
     }
     
@@ -201,10 +193,9 @@ private extension MoviesViewController {
         contentView.refreshTableView(refresh: refreshControl)
     }
     
-    @objc func refreshData() {
+    @objc func refreshData() async {
+        await MainActor.run {
         showLoadingIndicator()
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
             searchController.searchBar.text = nil
             yearPickerManager.selectedYear = nil
             contentView.setTextTitleLabel(text: "Выберите год релиза")
@@ -214,7 +205,7 @@ private extension MoviesViewController {
         }
     }
     
-    func configureCell(_ cell: MoviesTableViewCell, with movie: Item) {
+    func configureCell(_ cell: MoviesTableViewCell, with movie: Item) async {
         guard let posterUrl = movie.posterUrlPreview,
               let movieName = (movie.nameOriginal?.isEmpty ?? true) ? movie.nameRu : movie.nameOriginal,
               let genre = movie.genres,
@@ -222,7 +213,7 @@ private extension MoviesViewController {
               let year = movie.year,
               let kinopoiskId = movie.kinopoiskId else { return }
         let rating = movie.ratingKinopoisk
-        
+        await MainActor.run {
             cell.configureCell(viewData: .init(
                 movieName: movieName,
                 year: String(year),
@@ -231,10 +222,11 @@ private extension MoviesViewController {
                 rating: rating != nil ? String(rating!) : "",
                 kinopoiskId: kinopoiskId
             ))
-
-        NetworkManager.shared.loadImage(urlString: posterUrl) { [weak cell] image in
-                guard let cell, let image else { return }
-            DispatchQueue.main.async {
+        }
+        
+        Task {
+            let image = try await NetworkService.shared.loadImage(urlString: posterUrl)
+            await MainActor.run {
                 cell.setupPoster(image: image)
             }
         }
@@ -242,7 +234,7 @@ private extension MoviesViewController {
     
     @objc func sortButtonTapped() {
         let alertController = UIAlertController(title: "Сортировка", message: "Выберите параметр для сортировки", preferredStyle: .actionSheet)
-
+        
         let sortByDateAction = UIAlertAction(title: "По дате", style: .default) { [weak self] _ in
             self?.sortOrder = .year
             self?.reloadMovies()
@@ -254,11 +246,11 @@ private extension MoviesViewController {
         }
         
         let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
-
+        
         alertController.addAction(sortByDateAction)
         alertController.addAction(sortByRatingAction)
         alertController.addAction(cancelAction)
-
+        
         present(alertController, animated: true)
     }
     

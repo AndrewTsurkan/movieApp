@@ -6,11 +6,7 @@ final class DetailViewController: UIViewController {
     private let paginationManager = PaginationManager()
     private var id = 0
     private var scrollDebounceTimer: Timer?
-    private var viewData: DetailScreenResponse? {
-        didSet {
-            configureView()
-        }
-    }
+    private var viewData: DetailScreenResponse?
     
     private var stillsFilmURL: [StillsItems] = []
     private let contentView = DetailView()
@@ -54,10 +50,16 @@ extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSo
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: DetailCollectionViewCell.identifier,
                                                             for: indexPath) as? DetailCollectionViewCell else { return UICollectionViewCell() }
         guard let posterURL = stillsFilmURL[indexPath.item].previewUrl else { return UICollectionViewCell() }
-        NetworkManager.shared.loadImage(urlString: posterURL) { [weak cell] image in
-            guard let image, let cell else { return }
-            cell.configureCell(poster: image)
+        Task {
+            let image = try await NetworkService.shared.loadImage(urlString: posterURL)
+            await MainActor.run {
+                cell.configureCell(poster: image)
+            }
         }
+//        NetworkManager.shared.loadImage(urlString: posterURL) { [weak cell] image in
+//            guard let image, let cell else { return }
+//            cell.configureCell(poster: image)
+//        }
         return cell
     }
     
@@ -75,40 +77,29 @@ private extension DetailViewController {
         
         paginationManager.setLoadingState(true)
         
-        NetworkManager.shared.getStillsFilm(id: id, page: paginationManager.currentPage) { [weak self] result in
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                
-                paginationManager.setLoadingState(false)
-                
-                switch result {
-                case .success(let response):
-                    paginationManager.updatePages(totalPages: response.totalPages ?? 1)
-                    stillsFilmURL += response.items ?? []
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self else { return }
-                        contentView.reloadCollectionView()
-                        contentView.updateStillLabelVisibility(isHidden: stillsFilmURL.isEmpty)
-                    }
-                case .failure(let error):
-                    print("Ошибка при загрузке кадров: \(error)")
-                    
-                }
+        Task {
+            let response = try await NetworkService.shared.fetchData(id: id,
+                                                                     images: "images",
+                                                                     page: paginationManager.currentPage,
+                                                                     decodingType: DetailScreenStillsFilms.self)
+            
+            stillsFilmURL += response.items ?? []
+            paginationManager.setLoadingState(false)
+            paginationManager.updatePages(totalPages: response.totalPages ?? 1)
+            
+            await MainActor.run {
+                contentView.reloadCollectionView()
+                contentView.updateStillLabelVisibility(isHidden: stillsFilmURL.isEmpty)
             }
         }
     }
     
     func loadDetailData(id: Int) {
-        NetworkManager.shared.getDetailFilm(id: id) { [weak self] result in
-            DispatchQueue.main.async { [weak self] in
-                guard let self else { return }
-                
-                switch result {
-                case .success(let response):
-                    viewData = response
-                case .failure(let error):
-                    print("Ошибка при загрузке информации о фильме: \(error)")
-                }
+        Task {
+            let response = try await NetworkService.shared.fetchData(id: id , decodingType: DetailScreenResponse.self)
+            viewData = response
+            await MainActor.run {
+                configureView()
             }
         }
     }
@@ -125,10 +116,9 @@ private extension DetailViewController {
         
         let rating = viewData?.ratingKinopoisk
         let description  = viewData?.description
-        
-        NetworkManager.shared.loadImage(urlString: posterURL) { [weak self] image in
-            DispatchQueue.main.async { [weak self] in
-                guard let image, let self else { return }
+        Task {
+            let image = try await NetworkService.shared.loadImage(urlString: posterURL)
+            await MainActor.run {
                 contentView.configure(viewData: .init(
                     poster: image,
                     name: name,
