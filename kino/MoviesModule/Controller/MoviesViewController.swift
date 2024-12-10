@@ -128,15 +128,14 @@ private extension MoviesViewController {
                 case .success(let response):
                     paginationManager.updatePages(totalPages: response.totalPages ?? 1)
                     movies += response.items ?? []
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self else { return }
-                        self.contentView.reloadTableView()
-                    }
                 case .failure(let error):
                     print("Ошибка при загрузке фильмов: \(error)")
                     showErrorAlert(message: "Ошибка при загрузке данных. Пожалуйста, попробуйте позже.")
                 }
-                contentView.reloadTableView()
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    contentView.reloadTableView()
+                }
             }
         }
     }
@@ -210,7 +209,7 @@ private extension MoviesViewController {
             yearPickerManager.selectedYear = nil
             contentView.setTextTitleLabel(text: "Выберите год релиза")
             filteredMovies = []
-            paginationManager.changeCurrentPage(with: 1)
+            contentView.reloadTableView()
             hideLoadingIndicator()
         }
     }

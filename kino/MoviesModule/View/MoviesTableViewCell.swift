@@ -35,10 +35,11 @@ final class MoviesTableViewCell: UITableViewCell {
     }
     
     override func prepareForReuse() {
+        super.prepareForReuse()
+        posterImageView.image = nil
         movieName.text = nil
         genresLabel.text = nil
         yearAndCountriesLabel.text = nil
-        posterImageView.image = nil
         ratingLabel.text = nil
     }
 }
