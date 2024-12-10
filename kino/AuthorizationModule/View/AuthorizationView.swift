@@ -22,7 +22,7 @@ final class AuthorizationView: UIView {
     }
 }
 
-//MARK: - Public -
+//MARK: - Public extension -
 
 extension AuthorizationView {
     func getLogintext() -> String? {

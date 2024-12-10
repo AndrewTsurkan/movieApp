@@ -13,14 +13,11 @@ final class MoviesViewController: UIViewController {
     private let searchController = SearchController(searchResultsController: nil)
     private var refreshControl: UIRefreshControl!
     private var filteredMovies: [Item] = []
+    private var counter: Int = 1
     private var isFiltering: Bool {
         (searchController.isActive && searchController.searchBar.text?.isEmpty == false) || yearPickerManager.selectedYear != nil
     }
-    private var movies: [Item] = [] {
-        didSet {
-            contentView.reloadTableView()
-        }
-    }
+    private var movies: [Item] = []
     
     private let yearPickerManager = YearPickerManager()
     private let paginationManager = PaginationManager()
@@ -52,6 +49,11 @@ final class MoviesViewController: UIViewController {
         super.viewWillAppear(animated)
         setupNavigationBar()
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        searchController.isActive = false
+    }
 }
 
 // MARK: - UITableViewDelegate, UITableViewDataSource -
@@ -71,6 +73,12 @@ extension MoviesViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == movies.count - 1 {
+            paginationManager.loadMoreIfNeeded(currentRow: movies.count - 1, totalItemsCount: movies.count)
+        }
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 150
     }
@@ -80,19 +88,6 @@ extension MoviesViewController: UITableViewDelegate, UITableViewDataSource {
         guard let id = movie.kinopoiskId else { return }
         let detailViewController = DetailViewController(kinopoiskId: id)
         navigationController?.pushViewController(detailViewController, animated: true)
-    }
-}
-
-// MARK: - UIScrollViewDelegate -
-
-extension MoviesViewController: UIScrollViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let offsetY = scrollView.contentOffset.y
-        let contentHeight = scrollView.contentSize.height
-        let height = scrollView.frame.size.height
-        if offsetY > contentHeight - height - 100 && !paginationManager.isLoading {
-            paginationManager.loadMoreIfNeeded(currentRow: movies.count - 1, totalItemsCount: movies.count)
-        }
     }
 }
 
@@ -133,8 +128,13 @@ private extension MoviesViewController {
                 case .success(let response):
                     paginationManager.updatePages(totalPages: response.totalPages ?? 1)
                     movies += response.items ?? []
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self else { return }
+                        self.contentView.reloadTableView()
+                    }
                 case .failure(let error):
                     print("Ошибка при загрузке фильмов: \(error)")
+                    showErrorAlert(message: "Ошибка при загрузке данных. Пожалуйста, попробуйте позже.")
                 }
                 contentView.reloadTableView()
             }
@@ -206,14 +206,11 @@ private extension MoviesViewController {
         showLoadingIndicator()
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            
             searchController.searchBar.text = nil
             yearPickerManager.selectedYear = nil
             contentView.setTextTitleLabel(text: "Выберите год релиза")
             filteredMovies = []
             paginationManager.changeCurrentPage(with: 1)
-            movies.removeAll()
-            loadMovies(page: self.paginationManager.currentPage)
             hideLoadingIndicator()
         }
     }
@@ -227,18 +224,19 @@ private extension MoviesViewController {
               let kinopoiskId = movie.kinopoiskId else { return }
         let rating = movie.ratingKinopoisk
         
+            cell.configureCell(viewData: .init(
+                movieName: movieName,
+                year: String(year),
+                country: country.compactMap { $0.country },
+                genre: genre.compactMap { $0.genre },
+                rating: rating != nil ? String(rating!) : "",
+                kinopoiskId: kinopoiskId
+            ))
+
         NetworkManager.shared.loadImage(urlString: posterUrl) { [weak cell] image in
                 guard let cell, let image else { return }
             DispatchQueue.main.async {
-                cell.configureCell(viewData: .init(
-                    movieName: movieName,
-                    year: String(year),
-                    country: country.compactMap { $0.country },
-                    genre: genre.compactMap { $0.genre },
-                    rating: rating != nil ? String(rating!) : "",
-                    poster: image,
-                    kinopoiskId: kinopoiskId
-                ))
+                cell.setupPoster(image: image)
             }
         }
     }
@@ -269,5 +267,12 @@ private extension MoviesViewController {
         paginationManager.changeCurrentPage(with: 1)
         movies.removeAll()
         loadMovies(page: paginationManager.currentPage)
+    }
+    
+    func showErrorAlert(message: String) {
+        let alertController = UIAlertController(title: "Ошибка", message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertController.addAction(okAction)
+        present(alertController, animated: true)
     }
 }

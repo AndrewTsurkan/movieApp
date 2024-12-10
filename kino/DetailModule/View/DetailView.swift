@@ -243,9 +243,11 @@ extension DetailView {
     }
     
     func reloadCollectionView() {
-        DispatchQueue.main.async { [weak self] in
-            self?.collectionView.reloadData()
-        }
+        collectionView.reloadData()
+    }
+    
+    func updateStillLabelVisibility(isHidden: Bool) {
+        stillsLabel.isHidden = isHidden
     }
 }
 

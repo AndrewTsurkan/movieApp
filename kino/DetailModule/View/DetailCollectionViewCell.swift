@@ -44,7 +44,7 @@ private extension DetailCollectionViewCell {
     }
 }
 
-//MARK: - Public -
+//MARK: - Public extension -
 
 extension DetailCollectionViewCell {
     func configureCell(poster: UIImage) {

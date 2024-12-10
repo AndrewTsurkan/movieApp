@@ -8,9 +8,8 @@ final class YearPickerManager: NSObject, UIPickerViewDelegate, UIPickerViewDataS
 
     // MARK: - Initialization -
     
-    init(startYear: Int = 1990) {
-        let currentYear = Calendar.current.component(.year, from: Date())
-        self.years = Array(startYear...currentYear)
+    override init() {
+        self.years = Array(1990...2031)
     }
 
     // MARK: - UIPickerViewDataSource Methods -
