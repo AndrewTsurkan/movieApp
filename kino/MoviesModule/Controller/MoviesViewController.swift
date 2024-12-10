@@ -210,7 +210,7 @@ private extension MoviesViewController {
             yearPickerManager.selectedYear = nil
             contentView.setTextTitleLabel(text: "Выберите год релиза")
             filteredMovies = []
-            paginationManager.changeCurrentPage(with: 1)
+            contentView.reloadTableView()
             hideLoadingIndicator()
         }
     }
