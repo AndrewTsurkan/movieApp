@@ -138,7 +138,7 @@ private extension MoviesView {
     }
 }
 
-//MARK: - Public -
+//MARK: - Public extension -
 
 extension MoviesView {
     func setDelegateAndDataSource(delegate: UITableViewDelegate, dataSource: UITableViewDataSource) {
@@ -153,9 +153,7 @@ extension MoviesView {
     }
     
     func reloadTableView() {
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
-        }
+        tableView.reloadData()
     }
     
     func setTextTitleLabel(text: String) {

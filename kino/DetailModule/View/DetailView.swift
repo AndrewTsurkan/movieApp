@@ -212,7 +212,7 @@ private extension DetailView {
     
     func createLayout() -> UICollectionViewCompositionalLayout {
         //item
-        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(0.7))
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(0.6))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         //group
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.4), heightDimension: .fractionalHeight(1))
@@ -243,9 +243,11 @@ extension DetailView {
     }
     
     func reloadCollectionView() {
-        DispatchQueue.main.async { [weak self] in
-            self?.collectionView.reloadData()
-        }
+        collectionView.reloadData()
+    }
+    
+    func updateStillLabelVisibility(isHidden: Bool) {
+        stillsLabel.isHidden = isHidden
     }
 }
 

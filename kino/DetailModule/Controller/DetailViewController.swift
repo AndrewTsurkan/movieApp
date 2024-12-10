@@ -5,18 +5,14 @@ final class DetailViewController: UIViewController {
     //MARK: - Private properties -
     private let paginationManager = PaginationManager()
     private var id = 0
-    private var hasReachedEnd = false
-    private var viewData: DetailScreenResponse? = nil {
+    private var scrollDebounceTimer: Timer?
+    private var viewData: DetailScreenResponse? {
         didSet {
             configureView()
         }
     }
-    private var stillsFilmURL: [StillsItems] = [] {
-        didSet {
-            contentView.reloadCollectionView()
-        }
-    }
     
+    private var stillsFilmURL: [StillsItems] = []
     private let contentView = DetailView()
     //MARK: = Lifecycle -
     
@@ -65,23 +61,9 @@ extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSo
         return cell
     }
     
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard let collectionView = scrollView as? UICollectionView else { return }
-        
-        let contentWidth = collectionView.contentSize.width
-        let scrollOffsetX = collectionView.contentOffset.x
-        let scrollViewWidth = collectionView.frame.size.width
-        
-        if scrollOffsetX + scrollViewWidth >= contentWidth - 100 &&
-            !paginationManager.isLoading &&
-            !hasReachedEnd {
-            hasReachedEnd = true
-            //TODO: - я не знаю метод вызывается два раза, для синхронизации пришлось ввести hasReachedEnd потому что по другому не смог решить проблему, предпологаю, что скрол по инерции летит дальше, но как бороться с этим не нашел
-            paginationManager.loadMoreIfNeeded(currentRow: stillsFilmURL.count - 1, totalItemsCount: stillsFilmURL.count)
-        }
-        
-        if scrollOffsetX + scrollViewWidth == contentWidth  {
-            hasReachedEnd = false
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        if indexPath.item == stillsFilmURL.count - 1 {
+            paginationManager.loadMoreIfNeeded(currentRow: indexPath.row, totalItemsCount: stillsFilmURL.count)
         }
     }
 }
@@ -103,6 +85,11 @@ private extension DetailViewController {
                 case .success(let response):
                     paginationManager.updatePages(totalPages: response.totalPages ?? 1)
                     stillsFilmURL += response.items ?? []
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self else { return }
+                        contentView.reloadCollectionView()
+                        contentView.updateStillLabelVisibility(isHidden: stillsFilmURL.isEmpty)
+                    }
                 case .failure(let error):
                     print("Ошибка при загрузке кадров: \(error)")
                     
@@ -127,17 +114,17 @@ private extension DetailViewController {
     }
     
     func configureView() {
-        guard let viewData else { return }
-        let posterURL = viewData.posterUrlPreview ?? ""
-        let name = viewData.nameOriginal ?? viewData.nameRu ?? ""
-        let rating = viewData.ratingKinopoisk ?? 0
-        let description  = viewData.description ?? ""
-        let genre = viewData.genres ?? [Genre.init(genre: "")]
-        let country = viewData.countries ?? [Country.init(country: "")]
+        guard let posterURL = viewData?.posterUrlPreview,
+              let name = viewData?.nameOriginal ?? viewData?.nameRu,
+              let genre = viewData?.genres,
+              let country = viewData?.countries else { return }
         
-        let year = ([viewData.startYear, viewData.endYear].compactMap { $0 }.isEmpty)
-        ? [viewData.year].compactMap { $0 }.map { "\($0)"}
-        : [viewData.startYear, viewData.endYear].compactMap { $0 }.map { "\($0)"}
+        let year = ([viewData?.startYear, viewData?.endYear].compactMap { $0 }.isEmpty)
+        ? [viewData?.year].compactMap { $0 }.map { "\($0)"}
+        : [viewData?.startYear, viewData?.endYear].compactMap { $0 }.map { "\($0)"}
+        
+        let rating = viewData?.ratingKinopoisk
+        let description  = viewData?.description
         
         NetworkManager.shared.loadImage(urlString: posterURL) { [weak self] image in
             DispatchQueue.main.async { [weak self] in
@@ -145,11 +132,11 @@ private extension DetailViewController {
                 contentView.configure(viewData: .init(
                     poster: image,
                     name: name,
-                    rating: String(rating),
-                    description: description,
-                    genre: genre.compactMap { $0.genre},
+                    rating: rating != nil ? String(rating!) : "",
+                    description: description != nil ? description! : "",
+                    genre: genre.compactMap { $0.genre },
                     year: year,
-                    country: country.compactMap { $0.country}))
+                    country: country.compactMap { $0.country }))
             }
         }
     }
@@ -185,15 +172,10 @@ private extension DetailViewController {
         
         contentView.linkButtonAction = { [weak self] in
             guard let self, let urlString = viewData?.webUrl else { return }
-            guard let url = URL(string: urlString) else {
-                print("Invalid URL: \(urlString)")
-                return
-            }
+            guard let url = URL(string: urlString) else { return }
             
             if UIApplication.shared.canOpenURL(url) {
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
-            } else {
-                print("Cannot open URL: \(urlString)")
             }
         }
     }

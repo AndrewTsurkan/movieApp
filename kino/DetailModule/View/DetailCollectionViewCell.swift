@@ -31,6 +31,7 @@ private extension DetailCollectionViewCell {
         contentView.addSubview(posterImageView)
         posterImageView.translatesAutoresizingMaskIntoConstraints = false
         posterImageView.clipsToBounds = true
+        posterImageView.contentMode = .scaleToFill
         makeConstraint()
     }
     
@@ -44,7 +45,7 @@ private extension DetailCollectionViewCell {
     }
 }
 
-//MARK: - Public -
+//MARK: - Public extension -
 
 extension DetailCollectionViewCell {
     func configureCell(poster: UIImage) {

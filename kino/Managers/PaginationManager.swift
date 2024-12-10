@@ -17,7 +17,7 @@ class PaginationManager {
     }
 }
 
-//MARK: - Public -
+//MARK: - Public extension -
 
 extension PaginationManager {
     func loadMoreIfNeeded(currentRow: Int, totalItemsCount: Int) {
