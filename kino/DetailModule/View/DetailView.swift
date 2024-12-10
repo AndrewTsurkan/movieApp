@@ -25,6 +25,8 @@ final class DetailView: UIView {
     private let stackView = UIStackView()
     private let scrollView = UIScrollView()
     private let stillsLabel = UILabel()
+    private let linkButton = UIButton()
+    var linkButtonAction: (() -> ())?
     
     
     //MARK: - Lifecycle -
@@ -52,6 +54,7 @@ private extension DetailView {
         setupStackView()
         setupStillsLabel()
         setupTitleDescriptionLabel()
+        setupLinkButton()
         setupDescriptionLabel()
         setupGenreLabel()
         setupYearAndCountryLabel()
@@ -63,6 +66,7 @@ private extension DetailView {
         addSubview(filmNameLabel)
         addSubview(ratingLabel)
         addSubview(scrollView)
+        addSubview(linkButton)
         scrollView.addSubview(titleDescriptionLabel)
         scrollView.addSubview(stackView)
         stackView.addArrangedSubview(descriptionLabel)
@@ -94,6 +98,11 @@ private extension DetailView {
             titleDescriptionLabel.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 5),
             titleDescriptionLabel.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 20),
             titleDescriptionLabel.heightAnchor.constraint(equalToConstant: 25),
+            
+            linkButton.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 5),
+            linkButton.rightAnchor.constraint(equalTo: scrollView.rightAnchor, constant: -20),
+            linkButton.widthAnchor.constraint(equalToConstant: 30),
+            linkButton.heightAnchor.constraint(equalToConstant: 30),
             
             stackView.topAnchor.constraint(equalTo: titleDescriptionLabel.bottomAnchor, constant: 5),
             stackView.leftAnchor.constraint(equalTo: leftAnchor, constant: 20),
@@ -143,6 +152,13 @@ private extension DetailView {
         titleDescriptionLabel.font = UIFont.boldSystemFont(ofSize: 32)
         titleDescriptionLabel.textAlignment = .left
         titleDescriptionLabel.text = "Описание"
+    }
+    
+    func setupLinkButton() {
+        linkButton.translatesAutoresizingMaskIntoConstraints = false
+        linkButton.setImage(UIImage(systemName: "link"), for: .normal)
+        linkButton.tintColor = #colorLiteral(red: 0.2640381753, green: 0.8696789742, blue: 0.8171131611, alpha: 1)
+        linkButton.addTarget(self, action: #selector(linkButtonTapped), for: .touchUpInside)
     }
     
     func setupStackView() {
@@ -203,15 +219,13 @@ private extension DetailView {
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         //section
         let section = NSCollectionLayoutSection(group: group)
-        // header
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .absolute(50))
         section.orthogonalScrollingBehavior = .continuous
         section.interGroupSpacing = 20
         return UICollectionViewCompositionalLayout(section: section)
     }
 }
 
-//MARK: - Public -
+//MARK: - Public extension -
 extension DetailView {
     func setDelegate(delegate: UICollectionViewDelegate, dataSource: UICollectionViewDataSource) {
         collectionView.delegate = delegate
@@ -232,5 +246,12 @@ extension DetailView {
         DispatchQueue.main.async { [weak self] in
             self?.collectionView.reloadData()
         }
+    }
+}
+
+//MARK: - Private extension -
+private extension DetailView {
+    @objc func linkButtonTapped() {
+        linkButtonAction?()
     }
 }

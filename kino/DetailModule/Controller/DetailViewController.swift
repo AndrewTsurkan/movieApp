@@ -39,11 +39,7 @@ final class DetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setDelegate()
-        
-        paginationManager.loadMoreAction = { [weak self] page in
-            guard let self else { return }
-            loadDetailFilmsImages(id: id)
-        }
+        setAction()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -77,10 +73,10 @@ extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSo
         let scrollViewWidth = collectionView.frame.size.width
         
         if scrollOffsetX + scrollViewWidth >= contentWidth - 100 &&
-           !paginationManager.isLoading &&
-           !hasReachedEnd {
+            !paginationManager.isLoading &&
+            !hasReachedEnd {
             hasReachedEnd = true
-            //TODO: - я не знаю метод вызывается два раза, для синхронизации пришлось ввести hasReachedEnd потому что по другому не смог решить проблему, предпологаю, что скрол по инерции летит дальше, но как бороться с этим не нашел 
+            //TODO: - я не знаю метод вызывается два раза, для синхронизации пришлось ввести hasReachedEnd потому что по другому не смог решить проблему, предпологаю, что скрол по инерции летит дальше, но как бороться с этим не нашел
             paginationManager.loadMoreIfNeeded(currentRow: stillsFilmURL.count - 1, totalItemsCount: stillsFilmURL.count)
         }
         
@@ -102,14 +98,14 @@ private extension DetailViewController {
                 guard let self else { return }
                 
                 paginationManager.setLoadingState(false)
-
+                
                 switch result {
                 case .success(let response):
                     paginationManager.updatePages(totalPages: response.totalPages ?? 1)
                     stillsFilmURL += response.items ?? []
                 case .failure(let error):
                     print("Ошибка при загрузке кадров: \(error)")
-
+                    
                 }
             }
         }
@@ -132,16 +128,16 @@ private extension DetailViewController {
     
     func configureView() {
         guard let viewData else { return }
-         let posterURL = viewData.posterUrlPreview ?? ""
-              let name = viewData.nameOriginal ?? viewData.nameRu ?? ""
-              let rating = viewData.ratingKinopoisk ?? 0
-              let description  = viewData.description ?? ""
+        let posterURL = viewData.posterUrlPreview ?? ""
+        let name = viewData.nameOriginal ?? viewData.nameRu ?? ""
+        let rating = viewData.ratingKinopoisk ?? 0
+        let description  = viewData.description ?? ""
         let genre = viewData.genres ?? [Genre.init(genre: "")]
         let country = viewData.countries ?? [Country.init(country: "")]
         
         let year = ([viewData.startYear, viewData.endYear].compactMap { $0 }.isEmpty)
-            ? [viewData.year].compactMap { $0 }.map { "\($0)"}
-            : [viewData.startYear, viewData.endYear].compactMap { $0 }.map { "\($0)"}
+        ? [viewData.year].compactMap { $0 }.map { "\($0)"}
+        : [viewData.startYear, viewData.endYear].compactMap { $0 }.map { "\($0)"}
         
         NetworkManager.shared.loadImage(urlString: posterURL) { [weak self] image in
             DispatchQueue.main.async { [weak self] in
@@ -177,6 +173,28 @@ private extension DetailViewController {
                                              target: self,
                                              action: #selector(backButtonAction))
             navigationItem.leftBarButtonItem = backButton
+        }
+    }
+    
+    func setAction() {
+        
+        paginationManager.loadMoreAction = { [weak self] page in
+            guard let self else { return }
+            loadDetailFilmsImages(id: id)
+        }
+        
+        contentView.linkButtonAction = { [weak self] in
+            guard let self, let urlString = viewData?.webUrl else { return }
+            guard let url = URL(string: urlString) else {
+                print("Invalid URL: \(urlString)")
+                return
+            }
+            
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            } else {
+                print("Cannot open URL: \(urlString)")
+            }
         }
     }
 }

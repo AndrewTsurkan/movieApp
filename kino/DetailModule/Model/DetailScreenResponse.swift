@@ -11,4 +11,5 @@ struct DetailScreenResponse: Codable {
     let endYear: Int?
     let ratingKinopoisk: Double?
     let year: Int?
+    let webUrl: String? 
 }
