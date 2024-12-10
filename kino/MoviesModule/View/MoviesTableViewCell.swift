@@ -8,7 +8,6 @@ final class MoviesTableViewCell: UITableViewCell {
         let country: [String]
         let genre: [String]
         let rating: String
-        let poster: UIImage
         let kinopoiskId: Int
     }
     
@@ -36,11 +35,12 @@ final class MoviesTableViewCell: UITableViewCell {
     }
     
     override func prepareForReuse() {
+        super.prepareForReuse()
+        posterImageView.image = nil
         movieName.text = nil
         genresLabel.text = nil
         yearAndCountriesLabel.text = nil
-        posterImageView.image = nil
-        ratingLabel.text = nil 
+        ratingLabel.text = nil
     }
 }
 
@@ -129,14 +129,17 @@ private extension MoviesTableViewCell {
     }
 }
 
-//MARK: - Public -
+//MARK: - Public extension -
 
 extension MoviesTableViewCell {
     func configureCell(viewData: Movie) {
-        posterImageView.image = viewData.poster
         movieName.text = viewData.movieName
         yearAndCountriesLabel.text = "\(viewData.year), \(viewData.country.joined(separator: ", "))"
         genresLabel.text = viewData.genre.joined(separator: ", ")
         ratingLabel.text = viewData.rating
+    }
+    
+    func setupPoster(image: UIImage) {
+        posterImageView.image = image
     }
 }
