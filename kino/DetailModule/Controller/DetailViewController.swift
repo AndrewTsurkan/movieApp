@@ -5,11 +5,10 @@ final class DetailViewController: UIViewController {
     //MARK: - Private properties -
     private let paginationManager = PaginationManager()
     private var id = 0
-    private var scrollDebounceTimer: Timer?
     private var viewData: DetailScreenResponse?
-    
     private var stillsFilmURL: [StillsItems] = []
     private let contentView = DetailView()
+    
     //MARK: = Lifecycle -
     
     init(kinopoiskId: Int) {
@@ -56,10 +55,6 @@ extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSo
                 cell.configureCell(poster: image)
             }
         }
-//        NetworkManager.shared.loadImage(urlString: posterURL) { [weak cell] image in
-//            guard let image, let cell else { return }
-//            cell.configureCell(poster: image)
-//        }
         return cell
     }
     
@@ -83,11 +78,11 @@ private extension DetailViewController {
                                                                      page: paginationManager.currentPage,
                                                                      decodingType: DetailScreenStillsFilms.self)
             
-            stillsFilmURL += response.items ?? []
             paginationManager.setLoadingState(false)
             paginationManager.updatePages(totalPages: response.totalPages ?? 1)
             
             await MainActor.run {
+                stillsFilmURL += response.items ?? []
                 contentView.reloadCollectionView()
                 contentView.updateStillLabelVisibility(isHidden: stillsFilmURL.isEmpty)
             }
@@ -97,8 +92,8 @@ private extension DetailViewController {
     func loadDetailData(id: Int) {
         Task {
             let response = try await NetworkService.shared.fetchData(id: id , decodingType: DetailScreenResponse.self)
-            viewData = response
             await MainActor.run {
+                viewData = response
                 configureView()
             }
         }
@@ -116,6 +111,7 @@ private extension DetailViewController {
         
         let rating = viewData?.ratingKinopoisk
         let description  = viewData?.description
+        
         Task {
             let image = try await NetworkService.shared.loadImage(urlString: posterURL)
             await MainActor.run {
@@ -154,7 +150,6 @@ private extension DetailViewController {
     }
     
     func setAction() {
-        
         paginationManager.loadMoreAction = { [weak self] page in
             guard let self else { return }
             loadDetailFilmsImages(id: id)

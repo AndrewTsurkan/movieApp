@@ -11,17 +11,16 @@ final class MoviesViewController: UIViewController {
     
     private let contentView = MoviesView()
     private let searchController = SearchController(searchResultsController: nil)
-    private var refreshControl: UIRefreshControl!
+    private var refreshControl = UIRefreshControl()
     private var filteredMovies: [Item] = []
     private var counter: Int = 1
-    private var isFiltering: Bool {
-        (searchController.isActive && searchController.searchBar.text?.isEmpty == false) || yearPickerManager.selectedYear != nil
-    }
     private var movies: [Item] = []
-    
     private let yearPickerManager = YearPickerManager()
     private let paginationManager = PaginationManager()
     private var sortOrder: SortOrder = .rating
+    private var isFiltering: Bool {
+        (searchController.isActive && searchController.searchBar.text?.isEmpty == false) || yearPickerManager.selectedYear != nil
+    }
     
     // MARK: - Lifecycle -
     
@@ -39,7 +38,6 @@ final class MoviesViewController: UIViewController {
         pickerButtonTapped()
         setupRefreshControl()
         loadMovies(page: paginationManager.currentPage)
-        
         paginationManager.loadMoreAction = { [weak self] page in
             self?.loadMovies(page: page)
         }
@@ -97,7 +95,9 @@ extension MoviesViewController: UITableViewDelegate, UITableViewDataSource {
 
 extension MoviesViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        filterMovies()
+        Task {
+            await filterMovies()
+        }
     }
 }
 
@@ -109,7 +109,12 @@ private extension MoviesViewController {
     }
     
     func configureSearchController() {
-        searchController.searchBarTextChanged = { [weak self] _ in self?.filterMovies() }
+        searchController.searchBarTextChanged = { [weak self] _ in
+            Task {
+                await self?.filterMovies()
+            }
+        }
+        
         navigationItem.searchController = searchController
     }
     
@@ -124,8 +129,8 @@ private extension MoviesViewController {
         Task {
             let results = try await NetworkService.shared.fetchData(page: page, queryParams: queryParams, decodingType: MoviesResponse.self)
             paginationManager.updatePages(totalPages: results.totalPages ?? 1)
-            movies += results.items ?? []
             await MainActor.run {
+                movies += results.items ?? []
                 contentView.reloadTableView()
             }
             paginationManager.setLoadingState(false)
@@ -155,16 +160,20 @@ private extension MoviesViewController {
         contentView.setPickerViewDelegateAndDataSource(delegate: yearPickerManager, dataSource: yearPickerManager)
     }
     
-    func filterMovies() {
+    func filterMovies() async {
         guard isFiltering else {
             filteredMovies = []
-            contentView.reloadTableView()
+            await MainActor.run {
+                contentView.reloadTableView()
+            }
             return
         }
         
         let searchText = searchController.searchBar.text?.lowercased() ?? ""
         filteredMovies = MovieFilter.filter(movies: movies, searchText: searchText, selectedYear: yearPickerManager.selectedYear)
-        contentView.reloadTableView()
+        await MainActor.run {
+            contentView.reloadTableView()
+        }
     }
     
     func pickerButtonTapped() {
@@ -172,7 +181,9 @@ private extension MoviesViewController {
             self?.contentView.changeDate()
             guard let selectedYear = self?.yearPickerManager.selectedYear else { return }
             self?.contentView.setTextTitleLabel(text: String(selectedYear))
-            self?.filterMovies()
+            Task {
+              await self?.filterMovies()
+            }
         }
     }
     
@@ -187,7 +198,6 @@ private extension MoviesViewController {
     }
     
     func setupRefreshControl() {
-        refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         refreshControl.tintColor = .gray
         contentView.refreshTableView(refresh: refreshControl)
@@ -215,20 +225,18 @@ private extension MoviesViewController {
               let year = movie.year,
               let kinopoiskId = movie.kinopoiskId else { return }
         let rating = movie.ratingKinopoisk
-        await MainActor.run {
-            cell.configureCell(viewData: .init(
-                movieName: movieName,
-                year: String(year),
-                country: country.compactMap { $0.country },
-                genre: genre.compactMap { $0.genre },
-                rating: rating != nil ? String(rating!) : "",
-                kinopoiskId: kinopoiskId
-            ))
-        }
         
         Task {
             let image = try await NetworkService.shared.loadImage(urlString: posterUrl)
             await MainActor.run {
+                cell.configureCell(viewData: .init(
+                    movieName: movieName,
+                    year: String(year),
+                    country: country.compactMap { $0.country },
+                    genre: genre.compactMap { $0.genre },
+                    rating: rating != nil ? String(rating!) : "",
+                    kinopoiskId: kinopoiskId
+                ))
                 cell.setupPoster(image: image)
             }
         }
@@ -248,11 +256,9 @@ private extension MoviesViewController {
         }
         
         let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
-        
         alertController.addAction(sortByDateAction)
         alertController.addAction(sortByRatingAction)
         alertController.addAction(cancelAction)
-        
         present(alertController, animated: true)
     }
     

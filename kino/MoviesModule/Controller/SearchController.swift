@@ -2,11 +2,11 @@ import UIKit
 
 final class SearchController: UISearchController {
     
-    // MARK: - Public properties
+    // MARK: - Public properties -
     
     var searchBarTextChanged: ((String) -> Void)?
     
-    // MARK: - Initialization
+    // MARK: - Lifecycle -
     
     override init(searchResultsController: UIViewController? = nil) {
         super.init(searchResultsController: searchResultsController)

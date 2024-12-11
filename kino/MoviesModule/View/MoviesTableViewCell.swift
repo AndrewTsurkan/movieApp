@@ -69,12 +69,11 @@ private extension MoviesTableViewCell {
     }
     
     func makeConstraints() {
-        let screenWidth = UIScreen.main.bounds.width
         NSLayoutConstraint.activate([
             posterImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
             posterImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
             posterImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
-            posterImageView.widthAnchor.constraint(equalToConstant: screenWidth/3),
+            posterImageView.widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width / 3),
             
             ratingLabel.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -20),
             ratingLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
