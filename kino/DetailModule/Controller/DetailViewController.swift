@@ -50,9 +50,13 @@ extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSo
                                                             for: indexPath) as? DetailCollectionViewCell else { return UICollectionViewCell() }
         guard let posterURL = stillsFilmURL[indexPath.item].previewUrl else { return UICollectionViewCell() }
         Task {
-            let image = try await NetworkService.shared.loadImage(urlString: posterURL)
-            await MainActor.run {
-                cell.configureCell(poster: image)
+            do {
+                let image = try await NetworkService.shared.loadImage(urlString: posterURL)
+                await MainActor.run {
+                    cell.configureCell(poster: image)
+                }
+            } catch {
+                print("Не удалось получить данные: \(error)")
             }
         }
         return cell
@@ -73,28 +77,36 @@ private extension DetailViewController {
         paginationManager.setLoadingState(true)
         
         Task {
-            let response = try await NetworkService.shared.fetchData(id: id,
-                                                                     images: "images",
-                                                                     page: paginationManager.currentPage,
-                                                                     decodingType: DetailScreenStillsFilms.self)
-            
-            paginationManager.setLoadingState(false)
-            paginationManager.updatePages(totalPages: response.totalPages ?? 1)
-            
-            await MainActor.run {
-                stillsFilmURL += response.items ?? []
-                contentView.reloadCollectionView()
-                contentView.updateStillLabelVisibility(isHidden: stillsFilmURL.isEmpty)
+            do {
+                let response = try await NetworkService.shared.fetchData(id: id,
+                                                                         images: "images",
+                                                                         page: paginationManager.currentPage,
+                                                                         decodingType: DetailScreenStillsFilms.self)
+                
+                paginationManager.setLoadingState(false)
+                paginationManager.updatePages(totalPages: response.totalPages ?? 1)
+                
+                await MainActor.run {
+                    stillsFilmURL += response.items ?? []
+                    contentView.reloadCollectionView()
+                    contentView.updateStillLabelVisibility(isHidden: stillsFilmURL.isEmpty)
+                }
+            } catch {
+                print("Не удалось получить данные: \(error)")
             }
         }
     }
     
     func loadDetailData(id: Int) {
         Task {
-            let response = try await NetworkService.shared.fetchData(id: id , decodingType: DetailScreenResponse.self)
-            await MainActor.run {
-                viewData = response
-                configureView()
+            do {
+                let response = try await NetworkService.shared.fetchData(id: id , decodingType: DetailScreenResponse.self)
+                await MainActor.run {
+                    viewData = response
+                    configureView()
+                }
+            } catch {
+                print("Не удалось получить данные: \(error)")
             }
         }
     }
@@ -113,16 +125,20 @@ private extension DetailViewController {
         let description  = viewData?.description
         
         Task {
-            let image = try await NetworkService.shared.loadImage(urlString: posterURL)
-            await MainActor.run {
-                contentView.configure(viewData: .init(
-                    poster: image,
-                    name: name,
-                    rating: rating != nil ? String(rating!) : "",
-                    description: description != nil ? description! : "",
-                    genre: genre.compactMap { $0.genre },
-                    year: year,
-                    country: country.compactMap { $0.country }))
+            do {
+                let image = try await NetworkService.shared.loadImage(urlString: posterURL)
+                await MainActor.run {
+                    contentView.configure(viewData: .init(
+                        poster: image,
+                        name: name,
+                        rating: rating != nil ? String(rating!) : "",
+                        description: description != nil ? description! : "",
+                        genre: genre.compactMap { $0.genre },
+                        year: year,
+                        country: country.compactMap { $0.country }))
+                }
+            } catch {
+                print("Не удалось загрузить изображение: \(error)")
             }
         }
     }
