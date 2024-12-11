@@ -6,27 +6,13 @@ fileprivate enum NetworkError: Error {
 }
 
 final class NetworkService {
-    //MARK: - Singltone -
+    //MARK: - Singleton -
     
     static let shared = NetworkService(); private init() { }
     
     //MARK: - Private -
-    private let apiKey = "de1db718-950e-449d-88a1-39a41062cee6"
     
-    private func createURL(id: Int?, images: String?, queryParams: [String: String]?) -> URL? {
-        let tunnel = "https://"
-        let server = "kinopoiskapiunofficial.tech"
-        let baseEndPoint = "/api/v2.2/films"
-        let endPoint = "\(baseEndPoint)\(id.map { "/\($0)" } ?? "")\(images.map { "/\($0)" } ?? "")"
-        let urlString = tunnel + server + endPoint
-        var components = URLComponents(string: urlString)
-        
-        if let queryParams, !queryParams.isEmpty {
-            components?.queryItems = queryParams.map { URLQueryItem(name: $0.key, value: $0.value) }
-        }
-        
-        return components?.url
-    }
+    private let apiKey = "de1db718-950e-449d-88a1-39a41062cee6"
     
     func fetchData<T: Decodable>(id: Int? = nil, images: String? = nil, page: Int? = nil, queryParams: [String: String] = [:], decodingType: T.Type) async throws -> T {
         
@@ -67,5 +53,23 @@ final class NetworkService {
         
         ImageCache.shared.save(url: urlString, image: image)
         return image
+    }
+}
+
+//MARK: - Private extension -
+private extension NetworkService {
+    func createURL(id: Int?, images: String?, queryParams: [String: String]?) -> URL? {
+        let tunnel = "https://"
+        let server = "kinopoiskapiunofficial.tech"
+        let baseEndPoint = "/api/v2.2/films"
+        let endPoint = "\(baseEndPoint)\(id.map { "/\($0)" } ?? "")\(images.map { "/\($0)" } ?? "")"
+        let urlString = tunnel + server + endPoint
+        var components = URLComponents(string: urlString)
+        
+        if let queryParams, !queryParams.isEmpty {
+            components?.queryItems = queryParams.map { URLQueryItem(name: $0.key, value: $0.value) }
+        }
+        
+        return components?.url
     }
 }

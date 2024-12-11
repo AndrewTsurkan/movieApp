@@ -225,20 +225,18 @@ private extension MoviesViewController {
               let year = movie.year,
               let kinopoiskId = movie.kinopoiskId else { return }
         let rating = movie.ratingKinopoisk
-        await MainActor.run {
-            cell.configureCell(viewData: .init(
-                movieName: movieName,
-                year: String(year),
-                country: country.compactMap { $0.country },
-                genre: genre.compactMap { $0.genre },
-                rating: rating != nil ? String(rating!) : "",
-                kinopoiskId: kinopoiskId
-            ))
-        }
         
         Task {
             let image = try await NetworkService.shared.loadImage(urlString: posterUrl)
             await MainActor.run {
+                cell.configureCell(viewData: .init(
+                    movieName: movieName,
+                    year: String(year),
+                    country: country.compactMap { $0.country },
+                    genre: genre.compactMap { $0.genre },
+                    rating: rating != nil ? String(rating!) : "",
+                    kinopoiskId: kinopoiskId
+                ))
                 cell.setupPoster(image: image)
             }
         }
@@ -258,11 +256,9 @@ private extension MoviesViewController {
         }
         
         let cancelAction = UIAlertAction(title: "Отмена", style: .cancel)
-        
         alertController.addAction(sortByDateAction)
         alertController.addAction(sortByRatingAction)
         alertController.addAction(cancelAction)
-        
         present(alertController, animated: true)
     }
     
