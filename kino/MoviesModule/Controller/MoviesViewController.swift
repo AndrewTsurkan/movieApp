@@ -127,13 +127,17 @@ private extension MoviesViewController {
         queryParams["order"] = sortOrder.rawValue
         
         Task {
-            let results = try await NetworkService.shared.fetchData(page: page, queryParams: queryParams, decodingType: MoviesResponse.self)
-            paginationManager.updatePages(totalPages: results.totalPages ?? 1)
-            await MainActor.run {
-                movies += results.items ?? []
-                contentView.reloadTableView()
+            do {
+                let results = try await NetworkService.shared.fetchData(page: page, queryParams: queryParams, decodingType: MoviesResponse.self)
+                paginationManager.updatePages(totalPages: results.totalPages ?? 1)
+                await MainActor.run {
+                    movies += results.items ?? []
+                    contentView.reloadTableView()
+                }
+                paginationManager.setLoadingState(false)
+            }catch {
+                print("Не удалось получить данные: \(error)")
             }
-            paginationManager.setLoadingState(false)
         }
     }
     
@@ -182,7 +186,7 @@ private extension MoviesViewController {
             guard let selectedYear = self?.yearPickerManager.selectedYear else { return }
             self?.contentView.setTextTitleLabel(text: String(selectedYear))
             Task {
-              await self?.filterMovies()
+                await self?.filterMovies()
             }
         }
     }
@@ -227,17 +231,21 @@ private extension MoviesViewController {
         let rating = movie.ratingKinopoisk
         
         Task {
-            let image = try await NetworkService.shared.loadImage(urlString: posterUrl)
-            await MainActor.run {
-                cell.configureCell(viewData: .init(
-                    movieName: movieName,
-                    year: String(year),
-                    country: country.compactMap { $0.country },
-                    genre: genre.compactMap { $0.genre },
-                    rating: rating != nil ? String(rating!) : "",
-                    kinopoiskId: kinopoiskId
-                ))
-                cell.setupPoster(image: image)
+            do {
+                let image = try await NetworkService.shared.loadImage(urlString: posterUrl)
+                await MainActor.run {
+                    cell.configureCell(viewData: .init(
+                        movieName: movieName,
+                        year: String(year),
+                        country: country.compactMap { $0.country },
+                        genre: genre.compactMap { $0.genre },
+                        rating: rating != nil ? String(rating!) : "",
+                        kinopoiskId: kinopoiskId
+                    ))
+                    cell.setupPoster(image: image)
+                }
+            } catch {
+                print("Не удалось получить данные: \(error)")
             }
         }
     }
