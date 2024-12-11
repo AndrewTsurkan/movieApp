@@ -32,10 +32,7 @@ private extension DetailCollectionViewCell {
         posterImageView.translatesAutoresizingMaskIntoConstraints = false
         posterImageView.clipsToBounds = true
         posterImageView.contentMode = .scaleToFill
-        makeConstraint()
-    }
-    
-    func makeConstraint() {
+        
         NSLayoutConstraint.activate([
             posterImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
         posterImageView.leftAnchor.constraint(equalTo: contentView.leftAnchor),
