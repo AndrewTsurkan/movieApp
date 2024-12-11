@@ -136,7 +136,7 @@ private extension MoviesViewController {
                 }
                 paginationManager.setLoadingState(false)
             }catch {
-                print("Не удалось получить данные: \(error)")
+                print("Не удалось получить данные: \(error.localizedDescription)")
             }
         }
     }
@@ -245,7 +245,7 @@ private extension MoviesViewController {
                     cell.setupPoster(image: image)
                 }
             } catch {
-                print("Не удалось получить данные: \(error)")
+                print("Не удалось получить данные: \(error.localizedDescription)")
             }
         }
     }

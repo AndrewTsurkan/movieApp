@@ -56,7 +56,7 @@ extension DetailViewController: UICollectionViewDelegate, UICollectionViewDataSo
                     cell.configureCell(poster: image)
                 }
             } catch {
-                print("Не удалось получить данные: \(error)")
+                print("Не удалось получить данные: \(error.localizedDescription)")
             }
         }
         return cell
@@ -92,7 +92,7 @@ private extension DetailViewController {
                     contentView.updateStillLabelVisibility(isHidden: stillsFilmURL.isEmpty)
                 }
             } catch {
-                print("Не удалось получить данные: \(error)")
+                print("Не удалось получить данные: \(error.localizedDescription)")
             }
         }
     }
@@ -106,7 +106,7 @@ private extension DetailViewController {
                     configureView()
                 }
             } catch {
-                print("Не удалось получить данные: \(error)")
+                print("Не удалось получить данные: \(error.localizedDescription)")
             }
         }
     }
@@ -138,7 +138,7 @@ private extension DetailViewController {
                         country: country.compactMap { $0.country }))
                 }
             } catch {
-                print("Не удалось загрузить изображение: \(error)")
+                print("Не удалось загрузить изображение: \(error.localizedDescription)")
             }
         }
     }
