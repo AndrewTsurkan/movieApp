@@ -8,7 +8,7 @@ class PaginationManager {
     private(set) var isLoading: Bool
     
     var loadMoreAction: ((Int) -> Void)?
-    //MARK: - Lifecycle =
+    //MARK: - Lifecycle -
     
     init(currentPage: Int = 1, totalPage: Int = 1) {
         self.currentPage = currentPage

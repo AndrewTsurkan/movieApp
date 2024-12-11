@@ -11,9 +11,7 @@ final class MoviesView: UIView {
     private let datePicker = UIPickerView()
     private let pickerButton = UIButton()
     private let activityIndicator = UIActivityIndicatorView(style: .large)
-    
     var yearPickerButtonAction: (() -> Void)?
-    
     
     //MARK: - Lifecycle -
     

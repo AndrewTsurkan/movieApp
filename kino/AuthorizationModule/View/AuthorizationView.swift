@@ -34,7 +34,7 @@ extension AuthorizationView {
     }
 }
 
-//MARK: - Private extension -
+//MARK: - UI -
 
 private extension AuthorizationView {
     func setupUI() {
