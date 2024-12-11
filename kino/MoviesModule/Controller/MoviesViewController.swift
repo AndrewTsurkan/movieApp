@@ -193,15 +193,17 @@ private extension MoviesViewController {
         contentView.refreshTableView(refresh: refreshControl)
     }
     
-    @objc func refreshData() async {
-        await MainActor.run {
-        showLoadingIndicator()
-            searchController.searchBar.text = nil
-            yearPickerManager.selectedYear = nil
-            contentView.setTextTitleLabel(text: "Выберите год релиза")
-            filteredMovies = []
-            contentView.reloadTableView()
-            hideLoadingIndicator()
+    @objc func refreshData() {
+        Task {
+            await MainActor.run {
+                showLoadingIndicator()
+                searchController.searchBar.text = nil
+                yearPickerManager.selectedYear = nil
+                contentView.setTextTitleLabel(text: "Выберите год релиза")
+                filteredMovies = []
+                contentView.reloadTableView()
+                hideLoadingIndicator()
+            }
         }
     }
     
